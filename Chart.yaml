@@ -1,0 +1,18 @@
+apiVersion: v1
+appVersion: "latest"
+description: A Matrix-WhatsApp puppeting bridge https://maunium.net/go/mautrix-whatsapp
+name: mautrix-whatsapp
+version: 0.1.0
+keywords:
+  - synapse
+  - chat
+  - matrix
+  - bridge
+  - whatsapp
+home: https://maunium.net/go/mautrix-whatsapp
+sources:
+  - https://github.com/tulir/mautrix-whatsapp
+  - https://hub.docker.com/r/halkeye/mautrix-halkeye
+maintainers:
+  - name: Gavin Mogan
+    email: helm@gavinmogan.com
