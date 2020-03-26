@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: halkeye/mautrix-whatsapp
+  repository: dock.mau.dev/tulir/mautrix-whatsapp
   tag: latest
   pullPolicy: Always
 
