@@ -14,7 +14,7 @@ type: application
 appVersion: "latest"
 description: A Matrix-WhatsApp puppeting bridge https://maunium.net/go/mautrix-whatsapp
 name: mautrix-whatsapp
-version: 1.0.0
+version: 1.0.1
 keywords:
   - synapse
   - chat
