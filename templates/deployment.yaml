@@ -1,30 +1,41 @@
 apiVersion: apps/v1
+{{- $podAnnotations := .Values.podAnnotations }}
+{{- $secretAnnotation := dict "checksum/secret" (include (print $.Template.BasePath "/secrets.yaml") . | sha256sum) }}
+{{- $podAnnotations := merge $podAnnotations $secretAnnotation }}
 kind: Deployment
 metadata:
   name: {{ include "mautrix-whatsapp.fullname" . }}
+  {{- if .Values.deploymentAnnotations }}
+  annotations:
+    {{- range $key, $value := .Values.deploymentAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
   labels:
 {{ include "mautrix-whatsapp.labels" . | indent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+{{- if .Values.strategy }}
+  strategy:
+{{ toYaml .Values.strategy | indent 4 }}
+{{ if eq .Values.strategy.type "Recreate" }}
+    rollingUpdate: null
+{{- end }}
+{{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "mautrix-whatsapp.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
-  strategy:
-    type: Recreate
-    rollingUpdate: null
+      {{- include "mautrix-whatsapp.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      annotations:
-        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
       labels:
-        app.kubernetes.io/name: {{ include "mautrix-whatsapp.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "mautrix-whatsapp.selectorLabels" . | nindent 8 }}
+      {{- if $podAnnotations }}
+      annotations:
+        {{- range $key, $value := $podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
     spec:
-    {{- if .Values.dnsConfig }}
-      dnsConfig:
-        {{- toYaml .Values.dnsConfig | nindent 8 }}
-    {{- end }}
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -32,11 +43,15 @@ spec:
       serviceAccountName: {{ template "mautrix-whatsapp.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.dnsConfig }}
+      dnsConfig:
+        {{- toYaml .Values.dnsConfig | nindent 8 }}
+      {{- end }}
       initContainers:
         - name: init
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ tpl .Values.image.tag . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
           args:
@@ -62,23 +77,43 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ tpl .Values.image.tag . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
               containerPort: {{ .Values.config.appservice.port }}
               protocol: TCP
+{{- if .Values.config.metrics.enabled }}
+            - name: metrics
+              containerPort: {{ (split ":" .Values.config.metrics.listen)._1 }}
+              protocol: TCP
+{{- end }}
           env:
             - { name: UID, value: {{ .Values.uid | toString | quote }} }
             - { name: GID, value: {{ .Values.gid | toString | quote }} }
-          #livenessProbe:
-          #  httpGet:
-          #    path: {{ .Values.config.appservice.provisioning.prefix}}/ping
-          #    port: http
-          #readinessProbe:
-          #  httpGet:
-          #    path: {{ .Values.config.appservice.provisioning.prefix}}/ping
-          #    port: http
+{{- if .Values.config.metrics.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: {{ (split ":" .Values.config.metrics.listen)._1 }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: {{ (split ":" .Values.config.metrics.listen)._1 }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+          startupProbe:
+            httpGet:
+              path: /metrics
+              port: {{ (split ":" .Values.config.metrics.listen)._1 }}
+            initialDelaySeconds: {{ .Values.probes.startup.initialDelaySeconds }}
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+{{- end }}
+{{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
