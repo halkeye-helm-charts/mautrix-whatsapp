@@ -11,10 +11,10 @@ apiVersion: v2
 type: application
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application.
-appVersion: "latest"
+appVersion: "v0.7.1"
 description: A Matrix-WhatsApp puppeting bridge https://maunium.net/go/mautrix-whatsapp
 name: mautrix-whatsapp
-version: 1.0.1
+version: 1.0.2
 keywords:
   - synapse
   - chat
@@ -29,11 +29,8 @@ maintainers:
     email: helm@gavinmogan.com
 annotations:
   artifacthub.io/changes: |
-    - Initial Updated Template Version
-    - Add liveness/readiness probe support
-    - Move to updated docker image/github path
-    - Default metrics enabled
+    - Upgrade to 0.7.1
   artifacthub.io/containsSecurityUpdates: "false"
   artifacthub.io/images: |
     - name: whatsapp
-      image: dock.mau.dev/mautrix/whatsapp:latest
+      image: dock.mau.dev/mautrix/whatsapp:v0.7.1
