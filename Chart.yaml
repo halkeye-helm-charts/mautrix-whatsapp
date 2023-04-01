@@ -33,4 +33,4 @@ annotations:
   artifacthub.io/containsSecurityUpdates: "false"
   artifacthub.io/images: |
     - name: whatsapp
-      image: dock.mau.dev/mautrix/whatsapp:v0.8.2
+      image: "dock.mau.dev/mautrix/whatsapp:v0.8.2"
