@@ -1,20 +1,9 @@
 apiVersion: v2
-
-# A chart can be either an 'application' or a 'library' chart.
-#
-# Application charts are a collection of templates that can be packaged into versioned archives
-# to be deployed.
-#
-# Library charts provide useful utilities or functions for the chart developer. They're included as
-# a dependency of application charts to inject those utilities and functions into the rendering
-# pipeline. Library charts do not define any templates and therefore cannot be deployed.
 type: application
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application.
-appVersion: "v0.8.3"
+appVersion: v0.8.3
 description: A Matrix-WhatsApp puppeting bridge https://maunium.net/go/mautrix-whatsapp
 name: mautrix-whatsapp
-version: 1.0.3
+version: 1.1.0
 keywords:
   - synapse
   - chat
@@ -28,9 +17,9 @@ maintainers:
   - name: Gavin Mogan
     email: helm@gavinmogan.com
 annotations:
-  artifacthub.io/changes: |
-    - Upgrade to 0.8.2
-  artifacthub.io/containsSecurityUpdates: "false"
+  artifacthub.io/changes: |2
+     - "**deps:** update dock.mau.dev/mautrix/whatsapp docker tag to v0.8.3 ([45198e2](https://github.com/halkeye-helm-charts/mautrix-whatsapp/commit/45198e28f52c61fc059357bb41089685d11ebf82))"
+  artifacthub.io/containsSecurityUpdates: 'false'
   artifacthub.io/images: |
     - name: whatsapp
       image: "dock.mau.dev/mautrix/whatsapp:v0.8.3"
